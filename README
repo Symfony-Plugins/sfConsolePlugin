@@ -1,0 +1,40 @@
+sfConsolePlugin
+===============
+
+Provides a php shell with completion capabilities.
+
+Installation
+------------
+
+  * Install the plugin
+
+        $ symfony plugin:install sfConsolePlugin
+
+  * You're all set !
+
+Use the console
+---------------
+
+The console is started with the `console:run` task. You should be able
+enter any valid PHP code, and the console will try its best to
+evaluate it. Since the code gets eval()'d, and since some parts of PHP
+like error management are a bit crappy, there are some known
+limitations that I don't plan to work on:
+
+  * Fatal errors in the eval()'d scripts will terminate the console
+  * Error messages and Exceptions' backtraces won't feature useful
+    line numbers
+
+Special commands
+----------------
+
+  * `exit`: exits the console (amazing heh)
+  * `help`: not yet implemented
+  * `backtrace`: display the last exception's backtrace if any
+
+Todo
+----
+
+  * Support for multi-line constructs
+  * Support to run symfony tasks from within the console
+  * Better command completion
