@@ -282,6 +282,7 @@ EOF;
       {
         echo $this->lastException->getTraceAsString().PHP_EOL;
       }
+      return false;
     }
 
     return true;
