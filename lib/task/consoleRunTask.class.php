@@ -237,7 +237,14 @@ EOF;
     return $completion;
   }
 
-  protected function errorHandler($errno, $errstr, $errfile, $errline, $errcontext)
+  /**
+   * Error handler
+   * 
+   * @param integer $errno
+   * @param string $errstr
+   */
+
+  public function errorHandler($errno, $errstr)
   {
     echo (isset($this->errorNames[$errno]) ? $this->errorNames[$errno] : 'Unknown Error').': '.$errstr;
 
