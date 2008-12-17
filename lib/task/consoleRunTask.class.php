@@ -25,6 +25,32 @@ class consoleRunTask extends sfBaseTask
 
     protected $prompt = '(%nb_lines%)> ';
 
+    /**
+     * Stores the last exception catched
+     * @var Exception
+     */
+
+    protected $exception;
+
+    /**
+     * Error codes to name map
+     * @var array
+     */
+
+    protected $errorNames = array(
+      E_USER_ERROR => 'User Error',
+      E_USER_WARNING => 'User Warning',
+      E_USER_NOTICE => 'User Notice',
+      E_PARSE => 'Parse Error',
+      E_NOTICE => 'Notice',
+      E_WARNING => 'Warning',
+      E_STRICT => 'Strict Standards',
+      E_RECOVERABLE_ERROR => 'Catchable Fatal Error',
+      E_DEPRECATED => 'Deprecated',
+      E_USER_DEPRECATED => 'User Deprecated',
+    );
+
+
   /**
    * @see sfTask::configure()
    */
@@ -58,7 +84,10 @@ EOF;
     $database      = new sfDatabaseManager($configuration);
 
     $this->logSection('console', 'Welcome to the symfony console. Type exit to exit (no shit !)');
+
     readline_completion_function(array($this, 'completion'));
+    set_error_handler(array($this, 'errorHandler'));
+
     while ($line = trim((readline($this->getPrompt()))))
     {
       readline_add_history($line);
@@ -72,7 +101,16 @@ EOF;
       $line = $this->fixLine($line);
 
       ob_start();
-      eval($line);
+      try
+      {
+        eval($line);
+      }
+      catch (Exception $e)
+      {
+        $this->lastException = $e;
+        $this->logSection('console', 'exception catched ('.get_class($e).'): '.$e->getMessage());
+        $this->logSection('console', 'use the "backtrace" command to get a the full backtrace');
+      }
       $buffer = ob_get_clean();
 
       if (!empty($buffer))
@@ -152,6 +190,13 @@ EOF;
     return $completion;
   }
 
+  protected function errorHandler($errno, $errstr, $errfile, $errline, $errcontext)
+  {
+    $this->logSection('console', (isset($map[$errno]) ? $map[$errno] : 'Unknown Error').': '.$errstr);
+
+    return true;
+  }
+
   /**
    * Detects if the command is a console command
    * and run the appropriate routines if so
@@ -171,6 +216,18 @@ EOF;
     {
       $this->logSection('console', 'Sorry, help is not implemented yet.');
       return false;
+    }
+
+    if ($line == 'backtrace')
+    {
+      if (is_null($this->lastException))
+      {
+        $this->logSection('console', 'No exception to display');
+      }
+      else
+      {
+        echo $this->lastException->getTraceAsString().PHP_EOL;
+      }
     }
 
     return true;
