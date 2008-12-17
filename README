@@ -17,10 +17,28 @@ Use the console
 
 The console is started with the `console:run` task. You should be able
 enter any valid PHP code, and the console will try its best to
-evaluate it. Since the code gets eval()'d, and since some parts of PHP
-like error management are a bit crappy, there are some known
-limitations that I don't plan to work on:
+evaluate it.
 
+Features
+--------
+
+  * `readline` support. Basically it means you get an history of what
+    you previously typed
+  * Oh, by the way, that history will persist accross sessions
+  * Completion for built-in and user defined functions, classes and
+    constants
+  * Exceptions are catched and you can get the backtrace separately
+
+Limitations
+-----------
+
+Since the code gets eval()'d, and since some parts of PHP
+like error management are a bit crappy (also, I'm a bit lazy),
+there are some known limitations that I don't plan to work on:
+
+  * Not loaded classes can not be completed (those loaded with
+    the autoload for example)
+  * Variables can't be tab-completed
   * Fatal errors in the eval()'d scripts will terminate the console
   * Error messages and Exceptions' backtraces won't feature useful
     line numbers
