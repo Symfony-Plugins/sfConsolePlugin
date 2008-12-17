@@ -38,17 +38,24 @@ class consoleRunTask extends sfBaseTask
      */
 
     protected $errorNames = array(
-      E_USER_ERROR => 'User Error',
-      E_USER_WARNING => 'User Warning',
-      E_USER_NOTICE => 'User Notice',
-      E_PARSE => 'Parse Error',
-      E_NOTICE => 'Notice',
-      E_WARNING => 'Warning',
-      E_STRICT => 'Strict Standards',
+      E_USER_ERROR        => 'User Error',
+      E_USER_WARNING      => 'User Warning',
+      E_USER_NOTICE       => 'User Notice',
+      E_PARSE             => 'Parse Error',
+      E_NOTICE            => 'Notice',
+      E_WARNING           => 'Warning',
+      E_STRICT            => 'Strict Standards',
       E_RECOVERABLE_ERROR => 'Catchable Fatal Error',
-      E_DEPRECATED => 'Deprecated',
-      E_USER_DEPRECATED => 'User Deprecated',
+      E_DEPRECATED        => 'Deprecated',
+      E_USER_DEPRECATED   => 'User Deprecated',
     );
+
+  /**
+   * The file to store the history in
+   * @param string $historyFile
+   */
+
+  protected $historyFile;
 
 
   /**
@@ -62,6 +69,9 @@ class consoleRunTask extends sfBaseTask
     {
       throw new sfException('You need the readline extension enabled to use the console');
     }
+
+    // since we are in a task, current dir is the project root
+    $this->historyFile = 'cache/console.history';
 
     $this->namespace        = 'console';
     $this->name             = 'run';
@@ -88,9 +98,11 @@ EOF;
     readline_completion_function(array($this, 'completion'));
     set_error_handler(array($this, 'errorHandler'));
 
+    $this->initHistory();
+
     while ($line = trim((readline($this->getPrompt()))))
     {
-      readline_add_history($line);
+      $this->addHistoryLine($line);
       $this->nbLines++;
 
       if (!$this->doCommands($line))
@@ -119,6 +131,44 @@ EOF;
         echo PHP_EOL;
       }
     }
+  }
+
+  /**
+   * Reads the history file (if any) and adds all lines
+   * to current history
+   */
+
+  protected function initHistory()
+  {
+    if (!file_exists($this->historyFile))
+    {
+      touch($this->historyFile);
+    }
+
+    $fp = fopen($this->historyFile, 'r');
+    while ($line = trim(fgets($fp)))
+    {
+      if (!empty($line))
+      {
+        readline_add_history($line);
+      }
+    }
+    fclose($fp);
+  }
+
+  /**
+   * Adds a line to the console history
+   *
+   * @param string $line
+   * @return boolean
+   */
+
+  protected function addHistoryLine($line)
+  {
+    $fp = fopen($this->historyFile, 'a+');
+    fputs($fp, $line.PHP_EOL);
+    fclose($fp);
+    return readline_add_history($line);
   }
 
   /**
@@ -192,7 +242,7 @@ EOF;
 
   protected function errorHandler($errno, $errstr, $errfile, $errline, $errcontext)
   {
-    $this->logSection('console', (isset($map[$errno]) ? $map[$errno] : 'Unknown Error').': '.$errstr);
+    echo (isset($this->errorNames[$errno]) ? $this->errorNames[$errno] : 'Unknown Error').': '.$errstr;
 
     return true;
   }
