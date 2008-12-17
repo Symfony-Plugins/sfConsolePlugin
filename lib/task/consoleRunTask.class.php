@@ -228,9 +228,6 @@ EOF;
       $completion = array_merge($completion, array_map(create_function('$v', 'return $v.\'(\';'), $functions));
     }
 
-    // add vars
-    $completion = array_merge($completion, array_map(create_function('$v', 'return \'$\'.$v;'), array_keys(get_defined_vars())));
-
     // add classes
     $completion = array_merge($completion, get_declared_classes());
 
